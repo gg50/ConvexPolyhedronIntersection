@@ -59,5 +59,5 @@ dependencies {
 }
 
 run {
-    mainClassName = "main.HelloWorld"
+    mainClassName = "main.Main"
 }
