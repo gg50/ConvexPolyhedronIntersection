@@ -3,9 +3,7 @@ package main;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntSet;
-import lombok.AccessLevel;
-import lombok.ToString;
-import lombok.experimental.FieldDefaults;
+import lombok.Value;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -14,9 +12,8 @@ import lombok.extern.log4j.Log4j2;
  *
  * @version 1.0
  */
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @Log4j2
-@ToString(of = {"vertices"})
+@Value
 public class Face {
     IntSet vertexHashes = new IntSet(3);
     Array<Vector3> vertices = new Array<>(3);
