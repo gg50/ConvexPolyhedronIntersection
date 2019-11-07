@@ -1,8 +1,7 @@
-package main;
+package representation;
 
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntSet;
 import lombok.Value;
 import lombok.extern.log4j.Log4j2;
 
@@ -15,15 +14,12 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 @Value
 public class Face {
-    IntSet vertexHashes = new IntSet(3);
-    Array<Vector3> vertices = new Array<>(3);
+    Array<Vector3> vertices = new Array<>(6);
 
     public void addVertex(Vector3 vertex) {
         log.traceEntry("({})", vertex);
-        int hash = vertex.hashCode();
-        if (!vertexHashes.contains(hash)) {
+        if (!vertices.contains(vertex, false)) {
             vertices.add(vertex);
-            vertexHashes.add(hash);
         }
     }
 

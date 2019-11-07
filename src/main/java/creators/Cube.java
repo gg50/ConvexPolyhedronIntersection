@@ -1,21 +1,25 @@
-package main;
+package creators;
 
 import com.badlogic.gdx.math.Vector3;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.UtilityClass;
 import lombok.extern.log4j.Log4j2;
+import representation.Face;
+import representation.Polyhedron;
 
 /**
  * @version 1.0
  */
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Log4j2
-public class CubeCreator {
-    private static Vector3 hhh, hhl, hlh, hll, lhh, lhl, llh, lll;
-    private static Vector3 center;
-    private static Face top, bottom, north, south, east, west;
+@UtilityClass
+public class Cube {
+    Vector3 hhh, hhl, hlh, hll, lhh, lhl, llh, lll;
+    Vector3 center;
+    Face top, bottom, north, south, east, west;
 
-    public static Polyhedron createCube(Vector3 corner1, Vector3 corner2) {
+    public Polyhedron create(Vector3 corner1, Vector3 corner2) {
         log.traceEntry("({}. {})", corner1, corner2);
         initCorners(corner1, corner2);
         initFaces();
@@ -23,7 +27,7 @@ public class CubeCreator {
         return createCube();
     }
 
-    private static void initCorners(Vector3 corner1, Vector3 corner2) {
+    private void initCorners(Vector3 corner1, Vector3 corner2) {
         hhh = new Vector3(corner2.x, corner2.y, corner2.z);
         hhl = new Vector3(corner2.x, corner2.y, corner1.z);
         hlh = new Vector3(corner2.x, corner1.y, corner2.z);
@@ -38,7 +42,7 @@ public class CubeCreator {
         center = new Vector3(averageX, averageY, averageZ);
     }
 
-    private static void initFaces() {
+    private void initFaces() {
         log.traceEntry("()");
         top = new Face();
         bottom = new Face();
@@ -48,7 +52,7 @@ public class CubeCreator {
         west = new Face();
     }
 
-    private static void fillFaces() {
+    private void fillFaces() {
         log.traceEntry("({})");
         fillFace(north, hll, hhl, hhh, hlh);
         fillFace(south, lll, lhl, lhh, llh);
@@ -58,7 +62,7 @@ public class CubeCreator {
         fillFace(west, hhl, hll, lll, lhl);
     }
 
-    private static void fillFace(Face face, Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4) {
+    private void fillFace(Face face, Vector3 v1, Vector3 v2, Vector3 v3, Vector3 v4) {
         log.traceEntry("({}, {}, {}, {}, {})", face, v1, v2, v3, v4);
         face.addVertex(v1);
         face.addVertex(v2);
@@ -67,7 +71,7 @@ public class CubeCreator {
         face.rewind(center);
     }
 
-    private static Polyhedron createCube() {
+    private Polyhedron createCube() {
         Polyhedron cube = new Polyhedron();
         cube.addFace(top);
         cube.addFace(bottom);

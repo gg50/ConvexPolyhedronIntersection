@@ -7,7 +7,7 @@ plugins {
 group 'tools'
 version '1.0'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 ext{
     gdxVersion = '1.9.10'
 }

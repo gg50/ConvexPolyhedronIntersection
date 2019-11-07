@@ -1,4 +1,4 @@
-package main;
+package representation;
 
 import com.badlogic.gdx.utils.Array;
 import lombok.Value;
@@ -9,8 +9,8 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 @Value
-public class Polyhedron {
-    Array<Face> faces = new Array<>(4);
+public final class Polyhedron {
+    private final Array<Face> faces = new Array<>(8);
 
     public int getNumberOfFaces() {
         log.traceEntry("()");
@@ -61,5 +61,17 @@ public class Polyhedron {
             outPolyhedron.addFace(workingFace);
         }
         return outPolyhedron;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Face face : faces) {
+            sb.append("\t");
+            sb.append(face);
+            sb.append(",\n");
+        }
+        int length = sb.length();
+        sb.replace(length - 2, length, "");  // Remove extra comma and newline after last face.
+        return "Polyhedron(faces=[\n" + sb.toString() + "\n])";
     }
 }
