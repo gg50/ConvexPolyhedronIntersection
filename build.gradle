@@ -1,15 +1,24 @@
 plugins {
     id 'java'
     id 'application'
+    id 'java-library'
 }
 
 group 'tools'
 version '1.0'
 
 sourceCompatibility = 1.8
+ext{
+    gdxVersion = '1.9.10'
+}
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    maven { url "https://plugins.gradle.org/m2/" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    jcenter()
+    google()
 }
 
 dependencies {
@@ -43,6 +52,10 @@ dependencies {
 //    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
 //    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.0-M1'
 
+    api "com.badlogicgames.gdx:gdx:$gdxVersion"
+    api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+    api "com.github.czyzby:gdx-kiwi:1.9.1.9.6"
+    api "net.dermetfan.libgdx-utils:libgdx-utils:0.13.4"
 }
 
 run {
