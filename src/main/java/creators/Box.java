@@ -32,6 +32,7 @@ public class Box {
     }
 
     private void initCorners(Vector3 corner1, Vector3 corner2, Vector3 skew) {
+        log.traceEntry("({}, {}, {})", corner1, corner2, skew);
         hhh = new Vector3(corner2.x + skew.x, corner2.y, corner2.z);
         hhl = new Vector3(corner2.x + skew.x, corner2.y, corner1.z);
         hlh = new Vector3(corner2.x - skew.x, corner1.y, corner2.z);
@@ -40,10 +41,7 @@ public class Box {
         lhl = new Vector3(corner1.x + skew.x, corner2.y, corner1.z);
         llh = new Vector3(corner1.x - skew.x, corner1.y, corner2.z);
         lll = new Vector3(corner1.x - skew.x, corner1.y, corner1.z);
-        float averageX = 0.5f * (corner1.x + corner2.x);
-        float averageY = 0.5f * (corner1.y + corner2.y);
-        float averageZ = 0.5f * (corner1.z + corner2.z);
-        center = new Vector3(averageX, averageY, averageZ);
+        center = corner1.cpy().add(corner2).scl(0.5f);
     }
 
     private void initFaces() {
@@ -76,6 +74,7 @@ public class Box {
     }
 
     private Polyhedron createBox() {
+        log.traceEntry("()");
         Polyhedron box = new Polyhedron();
         box.addFace(top);
         box.addFace(bottom);
