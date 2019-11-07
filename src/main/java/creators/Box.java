@@ -14,7 +14,7 @@ import representation.Polyhedron;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Log4j2
 @UtilityClass
-public class Cube {
+public class Box {
     Vector3 hhh, hhl, hlh, hll, lhh, lhl, llh, lll;
     Vector3 center;
     Face top, bottom, north, south, east, west;
@@ -24,7 +24,7 @@ public class Cube {
         initCorners(corner1, corner2);
         initFaces();
         fillFaces();
-        return createCube();
+        return createBox();
     }
 
     private void initCorners(Vector3 corner1, Vector3 corner2) {
@@ -71,14 +71,14 @@ public class Cube {
         face.rewind(center);
     }
 
-    private Polyhedron createCube() {
-        Polyhedron cube = new Polyhedron();
-        cube.addFace(top);
-        cube.addFace(bottom);
-        cube.addFace(north);
-        cube.addFace(south);
-        cube.addFace(east);
-        cube.addFace(west);
-        return cube;
+    private Polyhedron createBox() {
+        Polyhedron box = new Polyhedron();
+        box.addFace(top);
+        box.addFace(bottom);
+        box.addFace(north);
+        box.addFace(south);
+        box.addFace(east);
+        box.addFace(west);
+        return box;
     }
 }
