@@ -31,7 +31,7 @@ public class Main {
         int v = 2;
         Vector3 p1 = new Vector3(-v, -v, -v);
         Vector3 p2 = new Vector3(v, v, v);
-        Vector3 skew = new Vector3(-2.5f, 0f, 0f);
+        Vector3 skew = new Vector3(0f, 0f, 0f);
         return Box.create(p1, p2, skew);
     }
 

@@ -20,11 +20,12 @@ import lombok.extern.log4j.Log4j2;
 @ToString(of = "vertices")
 public final class Face {
     final Array<Vector3> vertices = new Array<>(6);
-    Vector3 startPoint;
-    Vector3 endPoint;
+    /** The start and end of the edge that's currently selected for clipping. */
+    Vector3 startPoint, endPoint;
+    /** The intersection point between the edge and face currently selected for clipping. */
     Vector3 intersection;
-    boolean startIsInsideClippingFace;
-    boolean endIsInsideClippingFace;
+    /** Whether the start and end of the edge that's currently selected for clipping are inside the clipping face. */
+    boolean startIsInsideClippingFace, endIsInsideClippingFace;
 
     public void addVertex(Vector3 vertex) {
         log.traceEntry("({})", vertex);
@@ -33,16 +34,16 @@ public final class Face {
         }
     }
 
-    public int getNumberOfEdges() {
+    private int getNumberOfEdges() {
         return vertices.size;
     }
 
-    public Vector3 getStartPoint(int edgeIndex) {
+    private Vector3 getStartPoint(int edgeIndex) {
         log.traceEntry("({})", edgeIndex);
         return vertices.get(edgeIndex);
     }
 
-    public Vector3 getEndOfEdge(int edgeIndex) {
+    private Vector3 getEndOfEdge(int edgeIndex) {
         log.traceEntry("({})", edgeIndex);
         // Loop around to starting edge if needed.
         int index = (edgeIndex + 1) % vertices.size;
@@ -68,7 +69,7 @@ public final class Face {
                 + bDash.z * (cDash.x * pDash.y - cDash.y * pDash.x);
     }
 
-    public boolean pointIsInsideFace(Vector3 point) {
+    private boolean pointIsInsideFace(Vector3 point) {
         log.traceEntry("({})", point);
         float determinant = getPointVsFaceDeterminant(point);
         return determinant <= 0;  // <= because we define on the face to be "inside the face"
@@ -85,7 +86,7 @@ public final class Face {
         }
     }
 
-    public Vector3 getIntersectionPoint(Vector3 p1, Vector3 p2) {
+    private Vector3 getIntersectionPoint(Vector3 p1, Vector3 p2) {
         log.traceEntry("({}, {})", p1, p2);
         float determinant1 = getPointVsFaceDeterminant(p1);
         float determinant2 = getPointVsFaceDeterminant(p2);
@@ -112,7 +113,7 @@ public final class Face {
             setIntersectionWith(clippingFace);
             extendFace(workingFace);
         }
-        return sanityCheckFace(workingFace);
+        return workingFace.sanityCheckFace();
     }
 
     private void setStartAndEndOfEdge(int i) {
@@ -122,6 +123,11 @@ public final class Face {
         log.debug("Start {};  End {}", startPoint, endPoint);
     }
 
+    /**
+     * Calculates the {@link #intersection} point of
+     * the currently selected edge of this {@link Face} and <br/>
+     * the given face.
+     */
     private void setIntersectionWith(Face face) {
         log.traceEntry("({})", face);
         intersection = face.getIntersectionPoint(startPoint, endPoint);
@@ -132,6 +138,10 @@ public final class Face {
         log.trace("endIsInsideClippingFace = {}", endIsInsideClippingFace);
     }
 
+    /**
+     * Extends the given {@link Face} with the
+     * current {@link #intersection} point and/or {@link #endPoint} of the currently selected edge.
+     */
     private void extendFace(Face face) {
         log.traceEntry("({})", face);
         if (!startIsInsideClippingFace && endIsInsideClippingFace) {
@@ -163,13 +173,9 @@ public final class Face {
         }
     }
 
-    private Face sanityCheckFace(Face workingFace) {
-        int workingFaceNumberOfEdges = workingFace.getNumberOfEdges();
-        log.trace("workingFaceNumberOfEdges = {}", workingFaceNumberOfEdges);
-        if (workingFaceNumberOfEdges > 2) {
-            return workingFace;
-        } else {
-            return null;
-        }
+    private Face sanityCheckFace() {
+        log.traceEntry("()");
+        int numberOfVertices = vertices.size;
+        return numberOfVertices > 2 ? this : null;
     }
 }

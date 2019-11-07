@@ -23,16 +23,24 @@ public final class Polyhedron {
         log.traceEntry("({})", clippingPolyhedron);
         Polyhedron workingPolyhedron = this;
         for (Face clippingFace : clippingPolyhedron.faces) {
-            workingPolyhedron = clip(workingPolyhedron, clippingFace);
+            workingPolyhedron = workingPolyhedron.clip(clippingFace);
             log.trace("workingPolyhedron = {}", workingPolyhedron);
         }
-        return sanityCheck(workingPolyhedron);
+        return workingPolyhedron.sanityCheck();
     }
 
-    private Polyhedron clip(Polyhedron inPolyhedron, Face clippingFace) {
-        log.traceEntry("({}, {})", inPolyhedron, clippingFace);
-        Polyhedron outPolyhedron = clipPolyhedronByFace(inPolyhedron, clippingFace);
-        Face workingFace = clipFaceByPolyhedron(clippingFace, inPolyhedron);
+    /**
+     * Clips this {@link Polyhedron} by the given {@link Face}.  <br/>
+     * Uses {@link #clipByFace(Face)} to create  <br/>
+     * a new {@link Polyhedron} that is the same as this except  <br/>
+     * any part that is outside the clippingFace is clipped out  <br/>
+     * and the part that would be left empty (at the clipping) is filled by
+     * the {@link Face} created by {@link #clipFace(Face)}.
+     */
+    private Polyhedron clip(Face clippingFace) {
+        log.traceEntry("({})", clippingFace);
+        Polyhedron outPolyhedron = clipByFace(clippingFace);
+        Face workingFace = clipFace(clippingFace);
         if (workingFace != null) {
             log.debug("Working face {} was not null, so we add it to the outPolyhedron.", workingFace);
             outPolyhedron.addFace(workingFace);
@@ -42,10 +50,15 @@ public final class Polyhedron {
         return outPolyhedron;
     }
 
-    private Polyhedron clipPolyhedronByFace(Polyhedron inPolyhedron, Face clippingFace) {
-        log.traceEntry("({}, {})", inPolyhedron, clippingFace);
+    /**
+     * Clips this {@link Polyhedron} by the given {@link Face}.  <br/>
+     * Creates a new {@link Polyhedron} that is the same as this except  <br/>
+     * any part that is outside the clippingFace is clipped out.
+     */
+    private Polyhedron clipByFace(Face clippingFace) {
+        log.traceEntry("({})", clippingFace);
         Polyhedron outPolyhedron = new Polyhedron();
-        for (Face inFace : inPolyhedron.faces) {
+        for (Face inFace : faces) {
             Face clippedFace = inFace.clipFace(clippingFace);
             log.debug("clippedFace = {}", clippedFace);
             if (clippedFace != null) {
@@ -56,10 +69,15 @@ public final class Polyhedron {
         return outPolyhedron;
     }
 
-    private Face clipFaceByPolyhedron(Face clippingFace, Polyhedron inPolyhedron) {
-        log.traceEntry("({}, {})", inPolyhedron, clippingFace);
+    /**
+     * Clips the given {@link Face} by the {@link #faces} of this {@link Polyhedron}.  <br/>
+     * Creates a new {@link Face} that is the same as the given except  <br/>
+     * any part that is outside this {@link Polyhedron} is clipped out.
+     */
+    private Face clipFace(Face clippingFace) {
+        log.traceEntry("({})", clippingFace);
         Face workingFace = clippingFace;
-        for (Face face : inPolyhedron.faces) {
+        for (Face face : faces) {
             if (workingFace == null) {
                 break;
             } else {
@@ -70,15 +88,11 @@ public final class Polyhedron {
         return workingFace;
     }
 
-    private Polyhedron sanityCheck(Polyhedron workingPolyhedron) {
-        log.traceEntry("({})", workingPolyhedron);
-        int numberOfFaces = workingPolyhedron.faces.size;
+    private Polyhedron sanityCheck() {
+        log.traceEntry("({})");
+        int numberOfFaces = faces.size;
         log.trace("numberOfFaces = {}", numberOfFaces);
-        if (numberOfFaces > 2) {
-            return workingPolyhedron;
-        } else {
-            return null;
-        }
+        return numberOfFaces > 2 ? this : null;
     }
 
     public String toString() {
