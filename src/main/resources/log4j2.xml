@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Properties>
+        <Property name="basePath">logs</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+        <!-- Inner classes get separated from their enclosing classes by a $.
+        I prefer . separation. -->
+            <PatternLayout
+                    pattern="%highlight{[%replace{%class{1}}{\$}{.}::%method]: %msg%n}{INFO=blue, DEBUG=black, TRACE=white}"/>
+        </Console>
+
+        <!-- An appender to a debug.log file.
+        The file is archived every 1 time unit.
+        Because the smallest time unit in the file pattern is hour,
+        archiving happens every 1 hour.
+        The time policy is modulated, so that archiving happens on rounded time units.
+        So, it will archive at HH:00, rather than HH:mm.
+        -->
+        <RollingFile name="DebugLog" fileName="${basePath}/debug.log"
+                     filePattern="${basePath}/debug-%d{yyyy-MM-dd HH:00}.log">
+            <PatternLayout
+                    pattern="[%level] [%d{EE HH:mm:ss}] [%replace{%class{1}}{\$}{.}::%method]: %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+
+        <!-- An appender to a trace.log file. Rolls over every hour (as above). -->
+        <RollingFile name="TraceLog" fileName="${basePath}/trace.log"
+                     filePattern="${basePath}/trace-%d{yyyy-MM-dd HH:00}.log">
+            <PatternLayout
+                    pattern="[%level] [%d{yyyy-MM-dd HH:mm:ss.SSS}] [%threadId/%threadName] [%replace{%class}{\$}{.}::%method:%line]: %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="TRACE">
+            <AppenderRef ref="console" level="INFO"/>
+            <AppenderRef ref="DebugLog" level="DEBUG"/>
+            <AppenderRef ref="TraceLog" level="TRACE"/>
+        </Root>
+    </Loggers>
+</Configuration>

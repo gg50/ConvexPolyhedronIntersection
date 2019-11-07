@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'tools'
+version '1.0'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Lombok (https://projectlombok.org/)
+    compileOnly 'org.projectlombok:lombok:1.18.8'
+    annotationProcessor 'org.projectlombok:lombok:1.18.8'
+
+    // Apache Log4J (Best Logging EVER)
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.12.1'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.12.1'
+
+    // Used by some of the next two dependencies.
+    // https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils
+    compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4'
+
+    // Property files parsing.
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-configuration2
+    compile group: 'org.apache.commons', name: 'commons-configuration2', version: '2.6'
+
+    // Offers StringUtils and other useful.
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+
+    // Gson (Google's JSON parsing library)
+    compile 'com.google.code.gson:gson:2.8.5'
+
+    // Guava (Google' auxiliary libraries for Java)
+    compile 'com.google.guava:guava:28.1-jre'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+//    // https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+//    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.0-M1'
+
+}
+
+run {
+    mainClassName = "main.HelloWorld"
+}
