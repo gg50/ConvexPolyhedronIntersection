@@ -18,15 +18,18 @@ public class Main {
 
     private static Polyhedron createCube1() {
         log.traceEntry("()");
-        Vector3 p1 = new Vector3(-2, -2, -2);
-        Vector3 p2 = new Vector3(2, 2, 2);
-        return Box.create(p1, p2);
+        int v = 2;
+        Vector3 p1 = new Vector3(-v, -v, -v);
+        Vector3 p2 = new Vector3(v, v, v);
+        Vector3 skew = new Vector3(-2.5f, 0f, 0f);
+        return Box.create(p1, p2, skew);
     }
 
     private static Polyhedron createCube2() {
         log.traceEntry("()");
         Vector3 p3 = new Vector3(1f, 1f, 1f);
-        Vector3 p4 = new Vector3(3f, 3f, 3f);
+        float v = 10f;
+        Vector3 p4 = new Vector3(v, v, v);
         return Box.create(p3, p4);
     }
 }

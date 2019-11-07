@@ -2,7 +2,10 @@ package representation;
 
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import lombok.Value;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -11,10 +14,17 @@ import lombok.extern.log4j.Log4j2;
  *
  * @version 1.0
  */
+@EqualsAndHashCode(of = "vertices")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Log4j2
-@Value
-public class Face {
-    Array<Vector3> vertices = new Array<>(6);
+@ToString(of = "vertices")
+public final class Face {
+    final Array<Vector3> vertices = new Array<>(6);
+    Vector3 startPoint;
+    Vector3 endPoint;
+    Vector3 intersection;
+    boolean startIsInsideClippingFace;
+    boolean endIsInsideClippingFace;
 
     public void addVertex(Vector3 vertex) {
         log.traceEntry("({})", vertex);
@@ -27,12 +37,7 @@ public class Face {
         return vertices.size;
     }
 
-    public Vector3 getVertex(int index) {
-        log.traceEntry("({})", index);
-        return vertices.get(index);
-    }
-
-    public Vector3 getStartOfEdge(int edgeIndex) {
+    public Vector3 getStartPoint(int edgeIndex) {
         log.traceEntry("({})", edgeIndex);
         return vertices.get(edgeIndex);
     }
@@ -73,7 +78,10 @@ public class Face {
         log.traceEntry("({})", internalPoint);
         boolean isInside = pointIsInsideFace(internalPoint);
         if (!isInside) {
+            log.debug("internalPoint {} was not inside the face. Reversing array.", internalPoint);
+            log.debug("before = {}", vertices);
             vertices.reverse();
+            log.debug("after = {}", vertices);
         }
     }
 
@@ -81,8 +89,11 @@ public class Face {
         log.traceEntry("({}, {})", p1, p2);
         float determinant1 = getPointVsFaceDeterminant(p1);
         float determinant2 = getPointVsFaceDeterminant(p2);
+        log.trace("determinant1 = {}", determinant1);
+        log.trace("determinant2 = {}", determinant2);
         boolean equal = Float.compare(determinant1, determinant2) == 0;
         if (equal) {
+            log.trace("determinants are the same");
             return p1.cpy().add(p2).scl(0.5f);
         }
         Vector3 intersect = p2.cpy().sub(p1);
@@ -97,30 +108,68 @@ public class Face {
         Face workingFace = new Face();
         int numberOfEdges = getNumberOfEdges();
         for (int i = 0; i < numberOfEdges; i++) {
-            Vector3 startPoint = getStartOfEdge(i);
-            Vector3 endPoint = getEndOfEdge(i);
-            boolean p1IsInsideClippingFace = clippingFace.pointIsInsideFace(startPoint);
-            boolean p2IsInsideClippingFace = clippingFace.pointIsInsideFace(endPoint);
-            if (p1IsInsideClippingFace && p2IsInsideClippingFace) {
-                workingFace.addVertex(endPoint);
-            } else if (p1IsInsideClippingFace) {
-                Vector3 intersection = clippingFace.getIntersectionPoint(startPoint, endPoint);
-                workingFace.addVertex(intersection);
-            } else if (p2IsInsideClippingFace) {
-                Vector3 intersection = clippingFace.getIntersectionPoint(startPoint, endPoint);
-                workingFace.addVertex(intersection);
-                workingFace.addVertex(endPoint);
-            }
+            setStartAndEndOfEdge(i);
+            setIntersectionWith(clippingFace);
+            extendFace(workingFace);
         }
-        if (workingFace.getNumberOfEdges() > 2) {
+        return sanityCheckFace(workingFace);
+    }
+
+    private void setStartAndEndOfEdge(int i) {
+        log.traceEntry("({})", i);
+        startPoint = getStartPoint(i);
+        endPoint = getEndOfEdge(i);
+        log.debug("Start {};  End {}", startPoint, endPoint);
+    }
+
+    private void setIntersectionWith(Face face) {
+        log.traceEntry("({})", face);
+        intersection = face.getIntersectionPoint(startPoint, endPoint);
+        log.debug("Intersection: {}", intersection);
+        startIsInsideClippingFace = face.pointIsInsideFace(startPoint);
+        log.trace("startIsInsideClippingFace = {}", startIsInsideClippingFace);
+        endIsInsideClippingFace = face.pointIsInsideFace(endPoint);
+        log.trace("endIsInsideClippingFace = {}", endIsInsideClippingFace);
+    }
+
+    private void extendFace(Face face) {
+        log.traceEntry("({})", face);
+        if (!startIsInsideClippingFace && endIsInsideClippingFace) {
+            log.debug("Only end is inside the clipping face, adding intersection and end.");
+            // This represents the edge going into and behind the face.
+            // Thus we add the first point of this edge that is inside the face (the intersection),
+            // and then the last point of this poin that is inside the face (the end point).
+            face.addVertex(intersection);
+            face.addVertex(endPoint);
+        }
+        if (startIsInsideClippingFace && endIsInsideClippingFace) {
+            log.debug("Both inside, adding endPoint.");
+            // The previous edge has entered the face.
+            // This edge continues to be entirely in the face.
+            // Since this edge's start point is already added (as the previous edge's end),
+            // we need to add only the end of this edge.
+            face.addVertex(endPoint);
+        }
+        if (startIsInsideClippingFace && !endIsInsideClippingFace) {
+            log.debug("Only start is inside the clipping face, adding intersection.");
+            // The previous edge ended in the face.
+            // This edge leaves the face.
+            // Since this edge's start point is already added (as the previous edge's end),
+            // we need to add only the intersection of this edge with the face before it leave the face.
+            face.addVertex(intersection);
+        }
+        if (!startIsInsideClippingFace && !endIsInsideClippingFace) {
+            log.debug("Edge is outside the clipping face, not adding any vertices.");
+        }
+    }
+
+    private Face sanityCheckFace(Face workingFace) {
+        int workingFaceNumberOfEdges = workingFace.getNumberOfEdges();
+        log.trace("workingFaceNumberOfEdges = {}", workingFaceNumberOfEdges);
+        if (workingFaceNumberOfEdges > 2) {
             return workingFace;
         } else {
             return null;
         }
-    }
-
-    private int getNumberOfSegments() {
-        log.traceEntry("()");
-        return vertices.size - 2;
     }
 }

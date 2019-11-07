@@ -20,22 +20,26 @@ public class Box {
     Face top, bottom, north, south, east, west;
 
     public Polyhedron create(Vector3 corner1, Vector3 corner2) {
-        log.traceEntry("({}. {})", corner1, corner2);
-        initCorners(corner1, corner2);
+        return create(corner1, corner2, new Vector3(0f, 0f, 0f));
+    }
+
+    public Polyhedron create(Vector3 corner1, Vector3 corner2, Vector3 skew) {
+        log.traceEntry("({}, {}, {})", corner1, corner2, skew);
+        initCorners(corner1, corner2, skew);
         initFaces();
         fillFaces();
         return createBox();
     }
 
-    private void initCorners(Vector3 corner1, Vector3 corner2) {
-        hhh = new Vector3(corner2.x, corner2.y, corner2.z);
-        hhl = new Vector3(corner2.x, corner2.y, corner1.z);
-        hlh = new Vector3(corner2.x, corner1.y, corner2.z);
-        hll = new Vector3(corner2.x, corner1.y, corner1.z);
-        lhh = new Vector3(corner1.x, corner2.y, corner2.z);
-        lhl = new Vector3(corner1.x, corner2.y, corner1.z);
-        llh = new Vector3(corner1.x, corner1.y, corner2.z);
-        lll = new Vector3(corner1.x, corner1.y, corner1.z);
+    private void initCorners(Vector3 corner1, Vector3 corner2, Vector3 skew) {
+        hhh = new Vector3(corner2.x + skew.x, corner2.y, corner2.z);
+        hhl = new Vector3(corner2.x + skew.x, corner2.y, corner1.z);
+        hlh = new Vector3(corner2.x - skew.x, corner1.y, corner2.z);
+        hll = new Vector3(corner2.x - skew.x, corner1.y, corner1.z);
+        lhh = new Vector3(corner1.x + skew.x, corner2.y, corner2.z);
+        lhl = new Vector3(corner1.x + skew.x, corner2.y, corner1.z);
+        llh = new Vector3(corner1.x - skew.x, corner1.y, corner2.z);
+        lll = new Vector3(corner1.x - skew.x, corner1.y, corner1.z);
         float averageX = 0.5f * (corner1.x + corner2.x);
         float averageY = 0.5f * (corner1.y + corner2.y);
         float averageZ = 0.5f * (corner1.z + corner2.z);

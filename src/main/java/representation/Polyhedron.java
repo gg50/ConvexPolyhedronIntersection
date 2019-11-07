@@ -5,6 +5,8 @@ import lombok.Value;
 import lombok.extern.log4j.Log4j2;
 
 /**
+ * An array of {@link Face}s.
+ *
  * @version 1.0
  */
 @Log4j2
@@ -12,55 +14,71 @@ import lombok.extern.log4j.Log4j2;
 public final class Polyhedron {
     private final Array<Face> faces = new Array<>(8);
 
-    public int getNumberOfFaces() {
-        log.traceEntry("()");
-        return faces.size;
-    }
-
     public void addFace(Face face) {
         log.traceEntry("({})", face);
         faces.add(face);
     }
 
-    public Face getFace(int index) {
-        log.traceEntry("({})", index);
-        return faces.get(index);
-    }
-
     public Polyhedron clip(Polyhedron clippingPolyhedron) {
         log.traceEntry("({})", clippingPolyhedron);
         Polyhedron workingPolyhedron = this;
-        int numberOfFaces = clippingPolyhedron.getNumberOfFaces();
-        for (int i = 0; i < numberOfFaces; i++) {
-            Face clippingFace = clippingPolyhedron.getFace(i);
+        for (Face clippingFace : clippingPolyhedron.faces) {
             workingPolyhedron = clip(workingPolyhedron, clippingFace);
+            log.trace("workingPolyhedron = {}", workingPolyhedron);
         }
-        return workingPolyhedron;
+        return sanityCheck(workingPolyhedron);
     }
 
     private Polyhedron clip(Polyhedron inPolyhedron, Face clippingFace) {
         log.traceEntry("({}, {})", inPolyhedron, clippingFace);
+        Polyhedron outPolyhedron = clipPolyhedronByFace(inPolyhedron, clippingFace);
+        Face workingFace = clipFaceByPolyhedron(clippingFace, inPolyhedron);
+        if (workingFace != null) {
+            log.debug("Working face {} was not null, so we add it to the outPolyhedron.", workingFace);
+            outPolyhedron.addFace(workingFace);
+        } else {
+            log.debug("Working face was null, so we don't add it to the outPolyhedron.");
+        }
+        return outPolyhedron;
+    }
+
+    private Polyhedron clipPolyhedronByFace(Polyhedron inPolyhedron, Face clippingFace) {
+        log.traceEntry("({}, {})", inPolyhedron, clippingFace);
         Polyhedron outPolyhedron = new Polyhedron();
-        int numberOfFaces = inPolyhedron.getNumberOfFaces();
-        for (int i = 0; i < numberOfFaces; i++) {
-            Face inFace = inPolyhedron.getFace(i);
+        for (Face inFace : inPolyhedron.faces) {
             Face clippedFace = inFace.clipFace(clippingFace);
+            log.debug("clippedFace = {}", clippedFace);
             if (clippedFace != null) {
+                log.debug("Clipped Face was not null, so we add it.");
                 outPolyhedron.addFace(clippedFace);
             }
         }
+        return outPolyhedron;
+    }
+
+    private Face clipFaceByPolyhedron(Face clippingFace, Polyhedron inPolyhedron) {
+        log.traceEntry("({}, {})", inPolyhedron, clippingFace);
         Face workingFace = clippingFace;
-        for (int i = 0; i < numberOfFaces; i++) {
+        for (Face face : inPolyhedron.faces) {
             if (workingFace == null) {
                 break;
+            } else {
+                log.trace("workingFace = {}", workingFace);
             }
-            Face face = inPolyhedron.getFace(i);
             workingFace = workingFace.clipFace(face);
         }
-        if (workingFace != null) {
-            outPolyhedron.addFace(workingFace);
+        return workingFace;
+    }
+
+    private Polyhedron sanityCheck(Polyhedron workingPolyhedron) {
+        log.traceEntry("({})", workingPolyhedron);
+        int numberOfFaces = workingPolyhedron.faces.size;
+        log.trace("numberOfFaces = {}", numberOfFaces);
+        if (numberOfFaces > 2) {
+            return workingPolyhedron;
+        } else {
+            return null;
         }
-        return outPolyhedron;
     }
 
     public String toString() {
